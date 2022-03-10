@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
             "            answer = answer.replace(/\\s/g, \"\").replace(/。$/, \"\");" +
             "            var value = questionLi.children[2].getAttribute(\"value\");" +
             "            for (let i = 0; i < answerBgs.length; ++i) {" +
-            "                let answerP = answerBgs[i].getElementsByClassName(\"fl answer_p\")[0].textContent.trim();" +
+            "                let answerP = answerBgs[i].getElementsByClassName(\"fl answer_p\")[0].textContent.trim().replace(/\\s/g, \"\").replace(/。$/, \"\");" +
             "                let c = String.fromCharCode(65 + i);" +
             "                result += c + \" \" + answerP;" +
             "                if (answerP == answer) {" +
@@ -52,10 +52,10 @@ public class MainActivity extends AppCompatActivity {
             "            break;" +
             "        case \"多选题\":" +
             "            var answerBgs = questionLi.getElementsByClassName(\"clearfix answerBg\");" +
-            "            answer = answer.replace(/\\s/g, \"\");" +
+            "            answer = answer.replace(/\\s/g, \"\").replace(/。$/, \"\");" +
             "            var value = questionLi.children[2].getAttribute(\"value\");" +
             "            for (let i = 0; i < answerBgs.length; ++i) {" +
-            "                let answerP = answerBgs[i].getElementsByClassName(\"fl answer_p\")[0].textContent.trim();" +
+            "                let answerP = answerBgs[i].getElementsByClassName(\"fl answer_p\")[0].textContent.trim().replace(/\\s/g, \"\").replace(/。$/, \"\");" +
             "                let c = String.fromCharCode(65 + i);" +
             "                result += c + \" \" + answerP;" +
             "                let b = answer.includes(answerP);" +
