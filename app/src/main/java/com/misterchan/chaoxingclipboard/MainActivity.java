@@ -7,7 +7,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.ValueCallback;
@@ -24,13 +23,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String DO_WORK_URL_PREFIX = "https://mooc1.chaoxing.com/mooc2/work/dowork?courseId=";
+    private static final String URL_PREFIX_DO_WORK = "https://mooc1.chaoxing.com/mooc2/work/dowork?courseId=";
 
     private static final String JS_ANSWERS = "" +
-            "(function () {" +
+            "(() => {" +
             "    let number = %d, answer = \"%s\";" +
             "    let result = \"\";" +
-            "    let questionLi = document.getElementsByClassName(\"marBom50 questionLi\")[number - 1];" +
+            "    let questionLi = document.getElementsByClassName(questionClassName)[number - 1];" +
             "    switch (questionLi.getAttribute(\"typename\")) {" +
             "        case \"单选题\":" +
             "            var answerBgs = questionLi.getElementsByClassName(\"clearfix answerBg\");" +
@@ -110,9 +109,28 @@ public class MainActivity extends AppCompatActivity {
             "})()";
 
     private static final String JS_QUESTIONS = "" +
+            "if (typeof questionClassNames == \"undefined\") {" +
+            "    var questionClassNames = [\"marBom50 questionLi\", \"padBom50 questionLi\"];" +
+            "    var questionClassName = \"\";" +
+            "}" +
             "let editors = [];" +
-            "(function () {" +
-            "    let questionLis = document.getElementsByClassName(\"marBom50 questionLi\"), questions = [], answers = [];" +
+            "(() => {" +
+            "    let questionLis = [];" +
+            "    if (questionClassName == \"\") {" +
+            "        questionClassNames.forEach((qcn, i) => {" +
+            "            questionLis = document.getElementsByClassName(qcn);" +
+            "            if (questionLis.length > 0) {" +
+            "                questionClassName = qcn;" +
+            "                return false;" +
+            "            }" +
+            "        });" +
+            "    } else {" +
+            "        questionLis = document.getElementsByClassName(questionClassName);" +
+            "    }" +
+            "    if (questionLis.length == 0) {" +
+            "        return \"\";" +
+            "    }" +
+            "    let questions = [], answers = [];" +
             "    let editorId = 0;" +
             "    for (let i = 0; i < questionLis.length; ++i) {" +
             "        questions.push(questionLis[i].getElementsByClassName(\"mark_name colorDeep\")[0].textContent.match(/(?<=\\d+\\. \\(.+\\) )[\\s\\S]+/)[0]);" +
@@ -220,6 +238,19 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public void onBackPressed() {
+        if (webView.canGoBack()) {
+            webView.goBack();
+            if (webView.getVisibility() == View.GONE) {
+                llControl.setVisibility(View.GONE);
+                webView.setVisibility(View.VISIBLE);
+            }
+            return;
+        }
+        super.onBackPressed();
+    }
+
     @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -247,7 +278,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 webView.getSettings().setBlockNetworkImage(false);
-                if (url.startsWith(DO_WORK_URL_PREFIX)) {
+                if (url.startsWith(URL_PREFIX_DO_WORK)) {
                     matchWork();
                 }
                 super.onPageFinished(view, url);
@@ -256,7 +287,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 webView.getSettings().setBlockNetworkImage(true);
-                if (!url.startsWith(DO_WORK_URL_PREFIX)) {
+                if (!url.startsWith(URL_PREFIX_DO_WORK)) {
                     llQuestions.removeAllViews();
                     bAnswer.setEnabled(false);
                     number = 0;
@@ -266,19 +297,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         webView.loadUrl("https://i.chaoxing.com/");
-    }
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
-            webView.goBack();
-            if (webView.getVisibility() == View.GONE) {
-                llControl.setVisibility(View.GONE);
-                webView.setVisibility(View.VISIBLE);
-            }
-            return true;
-        }
-        return super.onKeyDown(keyCode, event);
     }
 
     /**
@@ -301,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
      * Show the questions.
      */
     private void showQuestions(String[] questions, String[] answers) {
-        for (int i = 0; i < questions.length; i++) {
+        for (int i = 0; i < questions.length; ++i) {
             LinearLayout layout = (LinearLayout) layoutInflater.inflate(R.layout.question, null);
 
             // Question
