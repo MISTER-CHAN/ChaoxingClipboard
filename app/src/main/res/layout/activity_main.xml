@@ -21,11 +21,10 @@
         android:orientation="vertical"
         android:visibility="gone">
 
-
         <ScrollView
             android:id="@+id/sv_questions"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="0dp"
             android:layout_weight="1">
 
             <LinearLayout
@@ -37,7 +36,7 @@
                     android:id="@+id/ll_questions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"></LinearLayout>
+                    android:orientation="vertical" />
             </LinearLayout>
         </ScrollView>
 
@@ -45,9 +44,18 @@
             android:id="@+id/b_answer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="answer"
             android:enabled="false"
+            android:onClick="answer"
             android:text="填上答案并复制下题题目" />
+
+        <Button
+            android:id="@+id/b_match_chapter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:onClick="matchChapterWork"
+            android:text="读取题目"
+            android:visibility="gone" />
     </LinearLayout>
 
     <Button
