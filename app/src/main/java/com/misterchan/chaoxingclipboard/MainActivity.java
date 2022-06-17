@@ -130,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
             "            case '单选题':" +
             "            case '多选题':" +
             "                var answerBgs = questionLis[i].getElementsByClassName('clearfix answerBg');" +
+            "                answer = '';" +
             "                for (let j = 0; j < answerBgs.length; ++j) {" +
             "                    answer += String.fromCharCode(65 + j) + ' ' + answerBgs[j].getElementsByClassName('fl answer_p')[0].textContent.trim() + '\\n';" +
             "                }" +
