@@ -7,7 +7,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.webkit.ValueCallback;
@@ -22,9 +21,10 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.Locale;
-
 public class MainActivity extends AppCompatActivity {
+
+    private static final String COPIED_ANSWER = "已复制第 %d 题选项";
+    private static final String COPIED_QUESTION = "已复制第 %d 题题目";
 
     private static final String URL_PREFIX_DO_WORK = "https://mooc1.chaoxing.com/mooc2/work/dowork";
     private static final String URL_PREFIX_CHAPTER = "https://mooc1.chaoxing.com/mycourse/studentstudy";
@@ -240,7 +240,6 @@ public class MainActivity extends AppCompatActivity {
     private final ValueCallback<String> onReceiveQAndAsCallback = value -> {
         if (!"null".equals(value)) {
             String[] qAndA = value.substring(1, value.length() - 1).replace("\\n", "\n").replace("\\u003C", "<").split(",,,");
-            Log.d("qa", value);
             if (qAndA.length == 2) {
                 // qAndA[0] - all the questions.
                 // qAndA[1] - all the answers.
@@ -253,35 +252,37 @@ public class MainActivity extends AppCompatActivity {
         bMatchChapter.setEnabled(true);
     };
 
-    public void answer(View view) {
-        if (clipboardManager.hasPrimaryClip()) {
-
-            // Answer
-            answer(number, clipboardManager.getPrimaryClip().getItemAt(0).getText().toString());
-
-            // Copy next question
-            if (number < questions.length) {
-                setNumber(number + 1);
-                copyQuestion(number, questions[number - 1]);
-                View v = llQuestions.getChildAt(number - 1);
-                int y = v.getTop();
-                if (svQuestions.getScrollY() + svQuestions.getHeight() < y + v.getHeight()) {
-                    svQuestions.smoothScrollTo(0, y);
-                }
-            }
-        }
-    }
-
     /**
      * Answer a question.
      */
     @SuppressLint("DefaultLocale")
-    private void answer(int number, String answer) {
-        webView.evaluateJavascript(String.format(JS_ANSWERS, number, answer
-                        .trim()
-                        .replace("\n", "")
-                        .replace("'", "\\'")),
-                value -> ((TextView) (llQuestions.getChildAt(number - 1)).findViewById(R.id.tv_answer)).setText(value.substring(1, value.length() - 1).replace("\\n", "\n")));
+    public void answer(View view) {
+        if (clipboardManager.hasPrimaryClip()) {
+
+            // Answer
+            webView.evaluateJavascript(
+                    String.format(JS_ANSWERS, number,
+                            clipboardManager.getPrimaryClip().getItemAt(0).getText().toString()
+                                    .trim().replace("\n", "").replace("'", "\\'")),
+                    value -> {
+                        if ("null".equals(value)) {
+                            return;
+                        }
+                        ((TextView) (llQuestions.getChildAt(number - 1)).findViewById(R.id.tv_answer))
+                                .setText(value.substring(1, value.length() - 1).replace("\\n", "\n"));
+
+                        // Copy next question
+                        if (number < questions.length) {
+                            setNumber(number + 1);
+                            copyQuestion(number, questions[number - 1]);
+                            View v = llQuestions.getChildAt(number - 1);
+                            int y = v.getTop();
+                            if (svQuestions.getScrollY() + svQuestions.getHeight() < y + v.getHeight()) {
+                                svQuestions.smoothScrollTo(0, y);
+                            }
+                        }
+                    });
+        }
     }
 
     private void bringControlToFront(View view) {
@@ -289,9 +290,15 @@ public class MainActivity extends AppCompatActivity {
         bMatchChapter.setVisibility(view == bMatchChapter ? View.VISIBLE : View.GONE);
     }
 
+    public void copyAnswer(View v) {
+        clipboardManager.setPrimaryClip(ClipData.newPlainText("Label", ((TextView) v).getText()));
+        Toast.makeText(this, String.format(COPIED_ANSWER, number), Toast.LENGTH_SHORT).show();
+    }
+
     public void copyQuestion(View v) {
-        setNumber((int) v.getTag());
-        copyQuestion(number, ((TextView) v).getText().toString());
+        int number = (int) v.getTag();
+        setNumber(number);
+        copyQuestion(number, questions[number - 1]);
         bAnswer.setEnabled(true);
     }
 
@@ -300,7 +307,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void copyQuestion(int number, String question) {
         clipboardManager.setPrimaryClip(ClipData.newPlainText("Label", question));
-        Toast.makeText(this, String.format("已复制第 %d 题题目", number), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, String.format(COPIED_QUESTION, number), Toast.LENGTH_SHORT).show();
     }
 
     public void matchChapterWork(View view) {
