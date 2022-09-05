@@ -48,14 +48,30 @@
             android:onClick="answer"
             android:text="填上答案并复制下题题目" />
 
-        <Button
-            android:id="@+id/b_match_chapter"
+        <LinearLayout
+            android:id="@+id/ll_chapter"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:onClick="matchChapterWork"
-            android:text="读取题目"
-            android:visibility="gone" />
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/b_match_chapter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="2dp"
+                android:onClick="matchChapterWork"
+                android:text="读取题目" />
+
+            <Button
+                android:id="@+id/b_skip_video"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="2dp"
+                android:onClick="skipVideo"
+                android:text="跳过视频" />
+        </LinearLayout>
     </LinearLayout>
 
     <Button

@@ -204,12 +204,25 @@ public class MainActivity extends AppCompatActivity {
             "    return questions.join(',,') + ',,,' + answers.join(',,');" +
             "})();";
 
+    private static final String JS_SKIP_VIDEO = "javascript:" +
+            "(() => {" +
+            "    let frames = document.getElementById('iframe').contentDocument.getElementsByTagName('iframe');" +
+            "    for (let frame of frames) {" +
+            "        let video = frame.contentDocument.getElementById('video_html5_api');" +
+            "        if (video != null) {" +
+            "            video.currentTime = video.duration;" +
+            "        }" +
+            "    }" +
+            "})();";
+
     private Button bAnswer;
     private Button bMatchChapter;
     private ClipboardManager clipboardManager;
     private int number = 0;
     private LayoutInflater layoutInflater;
-    private LinearLayout llQuestions, llControl;
+    private LinearLayout llChapter;
+    private LinearLayout llControl;
+    private LinearLayout llQuestions;
     private ScrollView svQuestions;
     private String[] questions;
     private WebView webView;
@@ -221,7 +234,7 @@ public class MainActivity extends AppCompatActivity {
             if (url.startsWith(URL_PREFIX_DO_WORK)) {
                 matchWork();
             } else if (url.startsWith(URL_PREFIX_CHAPTER)) {
-                bringControlToFront(bMatchChapter);
+                bringControlToFront(llChapter);
             }
             super.onPageFinished(view, url);
         }
@@ -287,8 +300,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void bringControlToFront(View view) {
-        bAnswer.setVisibility(view == bAnswer ? View.VISIBLE : View.GONE);
-        bMatchChapter.setVisibility(view == bMatchChapter ? View.VISIBLE : View.GONE);
+        bAnswer.setVisibility(View.GONE);
+        llChapter.setVisibility(View.GONE);
+        view.setVisibility(View.VISIBLE);
     }
 
     public void copyAnswer(View v) {
@@ -346,6 +360,7 @@ public class MainActivity extends AppCompatActivity {
         bMatchChapter = findViewById(R.id.b_match_chapter);
         clipboardManager = ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE));
         layoutInflater = LayoutInflater.from(this);
+        llChapter = findViewById(R.id.ll_chapter);
         llControl = findViewById(R.id.ll_control);
         llQuestions = findViewById(R.id.ll_questions);
         svQuestions = findViewById(R.id.sv_questions);
@@ -359,6 +374,7 @@ public class MainActivity extends AppCompatActivity {
         ws.setDatabaseEnabled(true);
         ws.setDomStorageEnabled(true);
         ws.setJavaScriptEnabled(true);
+        ws.setUseWideViewPort(true);
         ws.setRenderPriority(WebSettings.RenderPriority.HIGH);
         webView.setWebViewClient(webViewClient);
 
@@ -377,8 +393,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showHideQuestionsView(View v) {
-        llControl.setVisibility(8 - llControl.getVisibility());
-        webView.setVisibility(8 - webView.getVisibility());
+        llControl.setVisibility(llControl.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        webView.setVisibility(webView.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
     }
 
     /**
@@ -399,5 +415,11 @@ public class MainActivity extends AppCompatActivity {
 
             llQuestions.addView(layout.findViewById(R.id.ll_question));
         }
+    }
+
+    public void skipVideo(View v) {
+        webView.loadUrl(JS_SKIP_VIDEO);
+        llControl.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
     }
 }
